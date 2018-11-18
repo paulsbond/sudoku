@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Linq;
 
 namespace Sudoku
 {
@@ -6,38 +8,33 @@ namespace Sudoku
     {
         static void Main(string[] args)
         {
-            var possibleValues = new [] {'1','2','3','4','5','6','7','8','9'};
-
-            var easyGrid = new char[,]
+            if (!CheckArgs(args)) return;
+            foreach (var arg in args)
             {
-                {' ',' ',' ','7','5','2','8','1',' '},
-                {' ',' ',' ',' ','4',' ',' ',' ','6'},
-                {'2',' ',' ',' ','8','3',' ',' ','5'},
-                {' ',' ','9',' ',' ',' ','2','8','3'},
-                {' ','8',' ','3','9','7',' ','4',' '},
-                {'3','1','4',' ',' ',' ','7',' ',' '},
-                {'1',' ',' ','4','3',' ',' ',' ','7'},
-                {'4',' ',' ',' ','7',' ',' ',' ',' '},
-                {' ','9','5','2','6','1',' ',' ',' '},
-            };
+                var values = File.ReadAllLines(arg);
+                var sudoku = new Sudoku(values);
+                Console.WriteLine(sudoku);
+                sudoku.Solve();
+                Console.WriteLine(sudoku);
+            }
+        }
 
-            var difficultGrid = new char[,]
+        static bool CheckArgs(string[] args)
+        {
+            if (args.Length == 0)
             {
-                {' ',' ',' ',' ','9',' ','6',' ',' '},
-                {' ','2',' ','5','3',' ',' ','4',' '},
-                {' ','6',' ',' ',' ',' ','2','5',' '},
-                {' ',' ',' ',' ',' ',' ','1','6',' '},
-                {' ',' ',' ','1',' ','5',' ',' ',' '},
-                {' ','7','5',' ',' ',' ',' ',' ',' '},
-                {' ','4','7',' ',' ',' ',' ','8',' '},
-                {' ','9',' ',' ','6','8',' ','3',' '},
-                {' ',' ','3',' ','7',' ',' ',' ',' '},
-            };
-
-            var sudoku = new Sudoku(possibleValues, difficultGrid);
-            Console.WriteLine(sudoku);
-            sudoku.Solve();
-            Console.WriteLine(sudoku);
+                Console.WriteLine("No files given as command line arguments.");
+                return false;
+            }
+            foreach (var arg in args)
+            {
+                if (!File.Exists(arg))
+                {
+                    Console.WriteLine($"File '{arg}' does not exist.");
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }

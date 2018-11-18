@@ -8,6 +8,8 @@ namespace Sudoku
     {
         public IList<Cell> Cells = new List<Cell>();
 
+        public HashSet<int> Candidates = new HashSet<int> {1,2,3,4,5,6,7,8,9};
+
         public Group(IEnumerable<Cell> cells)
         {
             foreach (var cell in cells)
@@ -17,22 +19,27 @@ namespace Sudoku
             }
         }
 
-        public void RemovePossibleValue(char value)
+        public void RemoveCandidate(int number)
         {
+            Candidates.Remove(number);
             foreach (var cell in Cells)
-                cell.RemovePossibleValue(value);
+                cell.Candidates.Remove(number);
         }
 
         public void SinglePosition()
         {
-            var valuesLeft = Cells.SelectMany(c => c.PossibleValues).ToHashSet();
-            foreach (var value in valuesLeft)
+            foreach (var number in Candidates.ToArray())
             {
-                var count = Cells.Count(c => c.PossibleValues.Contains(value));
-                if (count != 1) continue;
-                var cell = Cells.Single(c => c.PossibleValues.Contains(value));
-                cell.SetValue(value);
+                var cells = Cells.Where(c => c.Candidates.Contains(number));
+                if (cells.Count() != 1) continue;
+                cells.Single().Set(number);
             }
+        }
+
+        public bool ContainsANumberMoreThanOnce()
+        {
+            var numbers = Cells.Select(c => c.Number).Where(n => n != null);
+            return (numbers.Count() != numbers.Distinct().Count());
         }
     }
 }

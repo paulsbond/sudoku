@@ -9,12 +9,14 @@ namespace Sudoku
         public IList<Cell> Cells = new List<Cell>();
         public IList<Group> Groups = new List<Group>();
 
-        public Sudoku(IEnumerable<char> possibleValues, char[,] initialValues)
+        public Cell Cell(int row, int col) => Cells[row * 9 + col];
+
+        public Sudoku(string[] values)
         {
             // Add empty cells with all possible values
             for (var row = 0; row < 9; row++)
                 for (var col = 0; col < 9; col++)
-                    Cells.Add(new Cell(row, col, possibleValues));
+                    Cells.Add(new Cell(row, col));
             // Create groups for rows and columns
             for (var i = 0; i < 9; i++)
             {
@@ -22,35 +24,43 @@ namespace Sudoku
                 Groups.Add(new Group(Cells.Where(c => c.Col == i)));
             }
             // Create groups for 3 by 3 boxes
-            for (var i = 0; i < 9; i+=3)
-                for (var j = 0; j < 9; j+=3)
+            for (var row = 0; row < 9; row += 3)
+                for (var col = 0; col < 9; col += 3)
                     Groups.Add(new Group(Cells.Where(c =>
-                        c.Row >= i && c.Row < i+3 &&
-                        c.Col >= j && c.Col < j+3
+                        c.Row >= row && c.Row < row + 3 &&
+                        c.Col >= col && c.Col < col + 3
                     )));
             // Set initial values
             foreach (var cell in Cells)
-                cell.SetValue(initialValues[cell.Row, cell.Col]);
+            {
+                var value = values[cell.Row][cell.Col];
+                if (!Char.IsDigit(value)) continue;
+                cell.Set(int.Parse(value.ToString()));
+            }
         }
 
         public void Solve()
         {
             // TODO: Cycle until the grid hasn't changed.
-            for (var i = 0; i < 5; i++)
+            // TODO: Will need a custom equality operator
+            for (var i = 0; i < 50; i++)
             {
-                foreach (var cell in Cells)
-                {
-                    cell.SingleCandidate();
-                }
-                foreach (var group in Groups)
-                {
-                    group.SinglePosition();
-                }
+                foreach (var cell in Cells) cell.SingleCandidate();
+                foreach (var group in Groups) group.SinglePosition();
+                // TODO: Other techniques
             }
+            // TODO: Guess one with least number of options and solve again
+            // TODO: If turns out to be wrong undo and try the next candidate
         }
 
-        private Cell Cell(int row, int col) =>
-            Cells.Single(c => c.Row == row && c.Col == col);
+        public bool IsValid()
+        {
+            foreach (var cell in Cells)
+                if (!cell.IsKnown && !cell.Candidates.Any()) return false;
+            foreach (var group in Groups)
+                if (group.ContainsANumberMoreThanOnce()) return false;
+            return true;
+        }
 
         public override string ToString()
         {

@@ -8,45 +8,35 @@ namespace Sudoku
     {
         public int Row;
         public int Col;
-        public char Value = ' ';
-        public HashSet<char> PossibleValues;
+        public int? Number;
+        public HashSet<int> Candidates = new HashSet<int> {1,2,3,4,5,6,7,8,9};
         public IList<Group> Groups = new List<Group>();
 
-        public Cell(int row, int col, IEnumerable<char> possibleValues)
+        public Cell(int row, int col)
         {
             Row = row;
             Col = col;
-            PossibleValues = new HashSet<char>(possibleValues);
         }
 
         public string Name => $"Row {Row + 1}, column {Col + 1}";
 
-        public void SetValue(char value)
+        public bool IsKnown => Number != null;
+
+        public void Set(int number)
         {
-            if (value == ' ' || Value == value) return;
-            if (!PossibleValues.Contains(value))
-            {
-                Console.WriteLine($"{Name} cannot be {value}.");
-                Environment.Exit(0);
-            }
-            Value = value;
-            PossibleValues.Clear();
+            if (!Candidates.Contains(number)) return;
+            Number = number;
+            Candidates.Clear();
             foreach (var group in Groups)
-                group.RemovePossibleValue(value);
+                group.RemoveCandidate(number);
         }
 
         public void SingleCandidate()
         {
-            if (PossibleValues.Count == 1)
-                SetValue(PossibleValues.Single());
+            if (Candidates.Count == 1) Set(Candidates.Single());
         }
 
-        public void RemovePossibleValue(char value)
-        {
-            if (!PossibleValues.Contains(value)) return;
-            PossibleValues.Remove(value);
-        }
-
-        public override string ToString() => Value.ToString();
+        public override string ToString() =>
+            (Number == null) ? " " : Number.ToString();
     }
 }
