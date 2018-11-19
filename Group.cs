@@ -4,6 +4,7 @@ using System.Linq;
 
 namespace Sudoku
 {
+    [Serializable]
     public class Group
     {
         public IList<Cell> Cells = new List<Cell>();
@@ -24,16 +25,6 @@ namespace Sudoku
             Candidates.Remove(number);
             foreach (var cell in Cells)
                 cell.Candidates.Remove(number);
-        }
-
-        public void SinglePosition()
-        {
-            foreach (var number in Candidates.ToArray())
-            {
-                var cells = Cells.Where(c => c.Candidates.Contains(number));
-                if (cells.Count() != 1) continue;
-                cells.Single().Set(number);
-            }
         }
 
         public bool ContainsANumberMoreThanOnce()

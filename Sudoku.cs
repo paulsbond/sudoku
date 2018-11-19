@@ -4,6 +4,7 @@ using System.Linq;
 
 namespace Sudoku
 {
+    [Serializable]
     public class Sudoku
     {
         public IList<Cell> Cells = new List<Cell>();
@@ -41,16 +42,20 @@ namespace Sudoku
 
         public void Solve()
         {
-            // TODO: Cycle until the grid hasn't changed.
-            // TODO: Will need a custom equality operator
-            for (var i = 0; i < 50; i++)
+            Solve(Techniques.SinglePosition, Techniques.SingleCandidate);
+        }
+
+        public void Solve(params Action<Sudoku>[] techniques)
+        {
+            var i = 0;
+            while (i < techniques.Length)
             {
-                foreach (var cell in Cells) cell.SingleCandidate();
-                foreach (var group in Groups) group.SinglePosition();
-                // TODO: Other techniques
+                Console.WriteLine($"Trying technique {i}");
+                var before = this.DeepClone();
+                techniques[i](this);
+                if (this.SameNumbersAs(before)) i++;
+                else i = 0;
             }
-            // TODO: Guess one with least number of options and solve again
-            // TODO: If turns out to be wrong undo and try the next candidate
         }
 
         public bool IsValid()
@@ -62,17 +67,25 @@ namespace Sudoku
             return true;
         }
 
+        public bool SameNumbersAs(Sudoku other)
+        {
+            for (var i = 0; i < 81; i++)
+                if (Cells[i].Number != other.Cells[i].Number)
+                    return false;
+            return true;
+        }
+
         public override string ToString()
         {
-            var seperator = "+-------+-------+-------+\n";
-            var output = seperator;
+            var separator = "+-------+-------+-------+\n";
+            var output = separator;
             for (var i = 0; i < 9; i++)
             {
                 output +=
                     $"| {Cell(i,0)} {Cell(i,1)} {Cell(i,2)} " +
                     $"| {Cell(i,3)} {Cell(i,4)} {Cell(i,5)} " +
                     $"| {Cell(i,6)} {Cell(i,7)} {Cell(i,8)} |\n";
-                if ((i + 1) % 3 == 0) output += seperator;
+                if ((i + 1) % 3 == 0) output += separator;
             }
             return output;
         }

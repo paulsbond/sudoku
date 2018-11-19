@@ -4,6 +4,7 @@ using System.Linq;
 
 namespace Sudoku
 {
+    [Serializable]
     public class Cell
     {
         public int Row;
@@ -29,11 +30,6 @@ namespace Sudoku
             Candidates.Clear();
             foreach (var group in Groups)
                 group.RemoveCandidate(number);
-        }
-
-        public void SingleCandidate()
-        {
-            if (Candidates.Count == 1) Set(Candidates.Single());
         }
 
         public override string ToString() =>
