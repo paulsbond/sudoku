@@ -17,7 +17,7 @@ namespace Sudoku
             // Add empty cells with all possible values
             for (var row = 0; row < 9; row++)
                 for (var col = 0; col < 9; col++)
-                    Cells.Add(new Cell(row, col));
+                    Cells.Add(new Cell(row, col, values[row][col]));
             // Create groups for rows and columns
             for (var i = 0; i < 9; i++)
             {
@@ -31,13 +31,10 @@ namespace Sudoku
                         c.Row >= row && c.Row < row + 3 &&
                         c.Col >= col && c.Col < col + 3
                     )));
-            // Set initial values
-            foreach (var cell in Cells)
-            {
-                var value = values[cell.Row][cell.Col];
-                if (!Char.IsDigit(value)) continue;
-                cell.Set(int.Parse(value.ToString()));
-            }
+            // Remove candidates from other cells
+            foreach (var cell in Cells.Where(c => c.IsKnown))
+                foreach (var group in cell.Groups)
+                    group.RemoveCandidate((int)cell.Number);
         }
 
         public void Solve()
