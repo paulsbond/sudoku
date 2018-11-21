@@ -25,5 +25,31 @@ namespace Sudoku
                 if (cell.Candidates.Count == 1)
                     cell.Set(cell.Candidates.Single());
         }
+
+        public static void SharedGroups(Sudoku sudoku)
+        {
+            foreach (var group in sudoku.Groups)
+            {
+                var candidates = group.Candidates.ToArray();
+                foreach (var number in candidates)
+                {
+                    var cells = group.Cells.Where(c =>
+                        c.Candidates.Contains(number)).ToArray();
+                    if (cells.Length < 2 || cells.Length > 3) continue;
+                    var sharedGroups = cells[0].Groups;
+                    for (var i = 1; i < cells.Length; i++)
+                        sharedGroups.Intersect(cells[i].Groups);
+                    foreach (var sharedGroup in sharedGroups)
+                    {
+                        if (sharedGroup == group) continue;
+                        foreach (var otherCell in sharedGroup.Cells)
+                        {
+                            if (cells.Contains(otherCell)) continue;
+                            otherCell.Candidates.Remove(number);
+                        }
+                    }
+                }
+            }
+        }
     }
 }

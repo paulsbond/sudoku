@@ -39,7 +39,9 @@ namespace Sudoku
 
         public void Solve()
         {
-            Solve(Techniques.SinglePosition, Techniques.SingleCandidate);
+            Solve(Techniques.SinglePosition,
+                Techniques.SingleCandidate,
+                Techniques.SharedGroups);
         }
 
         public void Solve(params Action<Sudoku>[] techniques)
