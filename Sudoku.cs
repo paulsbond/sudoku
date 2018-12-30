@@ -53,8 +53,8 @@ namespace Sudoku
                 var before = this.DeepClone();
                 techniques[i](this);
                 if (Cells.All(c => c.IsKnown)) return;
-                if (this.SameNumbersAs(before)) i++;
-                else i = 0;
+                if (this.HasMoreInformation(before)) i = 0;
+                else i++;
             }
         }
 
@@ -67,12 +67,16 @@ namespace Sudoku
             return true;
         }
 
-        public bool SameNumbersAs(Sudoku other)
+        public bool HasMoreInformation(Sudoku before)
         {
             for (var i = 0; i < 81; i++)
-                if (Cells[i].Number != other.Cells[i].Number)
-                    return false;
-            return true;
+            {
+                if (Cells[i].Number != before.Cells[i].Number)
+                    return true;
+                if (Cells[i].Candidates.Count < before.Cells[i].Candidates.Count)
+                    return true;
+            }
+            return false;
         }
 
         public override string ToString()
