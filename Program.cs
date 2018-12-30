@@ -16,6 +16,8 @@ namespace Sudoku
             {
                 sudoku.Solve();
                 Console.Write(sudoku);
+                if (sudoku.IsValid()) Console.WriteLine("Valid solution");
+                else Console.WriteLine("Invalid solution");
             }
             else Console.WriteLine("Input puzzle is not valid.");
         }
