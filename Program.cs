@@ -11,11 +11,11 @@ namespace Sudoku
             if (!CheckArgs(args)) return;
             var values = File.ReadAllLines(args[0]);
             var sudoku = new Sudoku(values);
-            Console.WriteLine(sudoku);
+            Console.Write(sudoku);
             if (sudoku.IsValid())
             {
                 sudoku.Solve();
-                Console.WriteLine(sudoku);
+                Console.Write(sudoku);
             }
             else Console.WriteLine("Input puzzle is not valid.");
         }
