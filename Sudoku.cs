@@ -41,7 +41,8 @@ namespace Sudoku
         {
             Solve(Techniques.SinglePosition,
                 Techniques.SingleCandidate,
-                Techniques.SharedGroups);
+                Techniques.SharedGroups,
+                Techniques.DisjointSubsets);
         }
 
         public void Solve(params Action<Sudoku>[] techniques)
