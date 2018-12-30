@@ -36,9 +36,9 @@ namespace Sudoku
                     var cells = group.Cells.Where(c =>
                         c.Candidates.Contains(number)).ToArray();
                     if (cells.Length < 2 || cells.Length > 3) continue;
-                    var sharedGroups = cells[0].Groups;
+                    var sharedGroups = cells[0].Groups.AsEnumerable();
                     for (var i = 1; i < cells.Length; i++)
-                        sharedGroups.Intersect(cells[i].Groups);
+                        sharedGroups = sharedGroups.Intersect(cells[i].Groups);
                     foreach (var sharedGroup in sharedGroups)
                     {
                         if (sharedGroup == group) continue;
