@@ -52,6 +52,7 @@ namespace Sudoku
                 Console.WriteLine($"Trying technique {i}");
                 var before = this.DeepClone();
                 techniques[i](this);
+                if (Cells.All(c => c.IsKnown)) return;
                 if (this.SameNumbersAs(before)) i++;
                 else i = 0;
             }
