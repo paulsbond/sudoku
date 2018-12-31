@@ -39,22 +39,24 @@ namespace Sudoku
 
         public void Solve()
         {
-            Solve(Techniques.SinglePosition,
-                Techniques.SingleCandidate,
-                Techniques.SharedGroups,
-                Techniques.DisjointSubsets);
+            Solve(Techniques.HiddenSingle,
+                Techniques.NakedSingle,
+                Techniques.LockedCandidates,
+                Techniques.NakedPairEtc);
         }
 
-        public void Solve(params Action<Sudoku>[] techniques)
+        public void Solve(params Func<Sudoku, bool>[] techniques)
         {
+            Console.Write(this);
             var i = 0;
             while (i < techniques.Length)
             {
-                Console.WriteLine($"Trying technique {i}");
-                var before = this.DeepClone();
-                techniques[i](this);
-                if (Cells.All(c => c.IsKnown)) return;
-                if (this.HasMoreInformation(before)) i = 0;
+                if (techniques[i](this))
+                {
+                    Console.Write(this);
+                    if (Cells.All(c => c.IsKnown)) return;
+                    i = 0;
+                }
                 else i++;
             }
         }
@@ -66,18 +68,6 @@ namespace Sudoku
             foreach (var group in Groups)
                 if (group.ContainsANumberMoreThanOnce()) return false;
             return true;
-        }
-
-        public bool HasMoreInformation(Sudoku before)
-        {
-            for (var i = 0; i < 81; i++)
-            {
-                if (Cells[i].Number != before.Cells[i].Number)
-                    return true;
-                if (Cells[i].Candidates.Count < before.Cells[i].Candidates.Count)
-                    return true;
-            }
-            return false;
         }
 
         public override string ToString()

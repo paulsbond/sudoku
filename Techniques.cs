@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -5,42 +6,44 @@ namespace Sudoku
 {
     public static class Techniques
     {
-        // Look through all groups
-        // and find out if one of the candidates
-        // only has a single cell that it can go in.
-        public static void SinglePosition(Sudoku sudoku)
+        public static bool HiddenSingle(Sudoku sudoku)
         {
             foreach (var group in sudoku.Groups)
             {
-                var candidates = group.Candidates.ToArray();
-                foreach (var number in candidates)
+                foreach (var number in group.Candidates.ToArray())
                 {
                     var cells = group.Cells.Where(c =>
                         c.Candidates.Contains(number));
                     if (cells.Count() != 1) continue;
-                    cells.Single().Set(number);
+                    var cell = cells.Single();
+                    Console.WriteLine("The only position a " + number + " can go in " + group.Name + " is " + cell.Name + " - Hidden Single");
+                    cell.Set(number);
+                    return true;
                 }
             }
+            return false;
         }
 
-        // Look through all the cells
-        // and find out if it only has a single candidate
-        public static void SingleCandidate(Sudoku sudoku)
+        public static bool NakedSingle(Sudoku sudoku)
         {
             foreach (var cell in sudoku.Cells)
+            {
                 if (cell.Candidates.Count == 1)
-                    cell.Set(cell.Candidates.Single());
+                {
+                    var number = cell.Candidates.Single();
+                    Console.WriteLine("The only number that can go in " + cell.Name + " is " + number + " - Naked Single");
+                    cell.Set(number);
+                    return true;
+                }
+            }
+            return false;
         }
 
-        // Look through possible positions for a candidate in the groups
-        // if all of the candidates belong to another group
-        // then remove the candidate from other cells in the other group
-        public static void SharedGroups(Sudoku sudoku)
+        public static bool LockedCandidates(Sudoku sudoku)
         {
             foreach (var group in sudoku.Groups)
             {
-                var candidates = group.Candidates.ToArray();
-                foreach (var number in candidates)
+                foreach (var number in group.Candidates)
                 {
                     var cells = group.Cells.Where(c =>
                         c.Candidates.Contains(number)).ToArray();
@@ -51,21 +54,73 @@ namespace Sudoku
                     foreach (var sharedGroup in sharedGroups)
                     {
                         if (sharedGroup == group) continue;
-                        foreach (var otherCell in sharedGroup.Cells)
+                        var otherCells = sharedGroup.Cells.Where(c =>
+                            !cells.Contains(c) && c.Candidates.Contains(number));
+                        if (otherCells.Any())
                         {
-                            if (cells.Contains(otherCell)) continue;
-                            otherCell.Candidates.Remove(number);
+                            Console.WriteLine(
+                                "The number " + number +
+                                " in " + group.Name +
+                                " can only be in " + sharedGroup.Name +
+                                " so removing it as a candidate" +
+                                " in other cells of " + sharedGroup.Name +
+                                " - Locked Candidates");
+                            foreach (var otherCell in otherCells)
+                                otherCell.Candidates.Remove(number);
+                            return true;
                         }
                     }
                 }
             }
+            return false;
         }
 
-        // If a candidate has only two positions in a group
-        // and another candidate has the same two positions
-        // then remove other candidates in those positions
-        // TODO: Expand to any number not just pairs
-        public static void DisjointSubsets(Sudoku sudoku)
+        public static bool NakedPairEtc(Sudoku sudoku)
+        {
+            foreach (var group in sudoku.Groups)
+            {
+                var subsets = new Dictionary<HashSet<int>, HashSet<Cell>>();
+                foreach (var cell in group.Cells)
+                {
+                    if (cell.IsKnown) continue;
+                    foreach (var subset in subsets.ToArray())
+                    {
+                        if (cell.Candidates.IsSubsetOf(subset.Key))
+                        {
+                            subset.Value.Add(cell);
+                        }
+                        var newKey = subset.Key.Union(cell.Candidates).ToHashSet();
+                        var newValue = subset.Value.Append(cell).ToHashSet();
+                        subsets.Add(newKey, newValue);
+                    }
+                    subsets.Add(cell.Candidates.ToHashSet(), new HashSet<Cell>() { cell });
+                }
+                foreach (var subset in subsets)
+                {
+                    if (subset.Key.Count != subset.Value.Count) continue;
+                    var otherCells = group.Cells.Where(c =>
+                        !subset.Value.Contains(c) &&
+                        c.Candidates.Intersect(subset.Key).Any());
+                    if (otherCells.Any())
+                    {
+                        Console.WriteLine(
+                            "In " + group.Name + "," +
+                            " the numbers " + string.Join(", ", subset.Key) +
+                            " are shared between " + string.Join(" and ", subset.Value.Select(c => c.Name)) +
+                            " so they cannot be in other cells" +
+                            " - Naked Pair/Triplet/Quad/etc");
+                        foreach (var otherCell in otherCells)
+                            foreach (var number in subset.Key)
+                                otherCell.Candidates.Remove(number);
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        // TODO
+        public static void HiddenPairEtc(Sudoku sudoku)
         {
             foreach (var group in sudoku.Groups)
             {
